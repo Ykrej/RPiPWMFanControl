@@ -125,19 +125,34 @@ func getDesiredFanSpeedPercent(
 ) uint8 {
 	// TODO: Replace 100 values with percent fan speed interpolated between stop and max temp
 	if currentTempCelsius >= maxTempCelsius {
-		return 100
+		return percentOfRange(stopTempCelsius, maxTempCelsius, currentTempCelsius)
 	}
 
 	if currentFanSpeedPercent > 0 {  // Fan already running
 		if currentTempCelsius > stopTempCelsius {
-			return 100
+			return percentOfRange(stopTempCelsius, maxTempCelsius, currentTempCelsius)
 		}
 	} else {  // Fan not currently running
 		if currentTempCelsius >= startTempCelsius {
-			return 100
+			return percentOfRange(stopTempCelsius, maxTempCelsius, currentTempCelsius)
 		}
 	}
 	
 	return 0
 }
 
+func percentOfRange(min float32, max float32, value float32) uint8 {
+	// Gets the percent of the range the value represen
+	if value > max {
+		return 100
+	}
+	if value <= min {
+		return 0
+	}
+
+	percent := uint8((value - min) / (max - min) * 100)
+	if percent > 100 {
+		percent = 100
+	}
+	return percent
+}
