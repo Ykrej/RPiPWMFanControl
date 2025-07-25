@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math"
@@ -28,17 +29,27 @@ func (c *Config) GetPollingRateDuration() time.Duration {
 	return time.Duration(c.pollingRateMilliseconds * uint32(time.Millisecond))
 }
 
-func main() {
-	fmt.Println("Hello World")
+func (c *Config) String() string {
+	return fmt.Sprintf(`Config
+	GPIO Pin:          %v
+	Control Frequency: %v hz
+	Start Temp:        %v °C
+	Stop Temp:         %v °C
+	Max Temp:          %v °C
+	Polling Rate:      %v ms`,
+		c.gpioPin,
+		c.controlFrequencyHz,
+		c.startTempCelsius,
+		c.stopTempCelsius,
+		c.maxTempCelsius,
+		c.pollingRateMilliseconds,
+	)
+}
 
-	config := Config{
-		gpioPin:                 18,
-		controlFrequencyHz:      25000,
-		pollingRateMilliseconds: 500,
-		startTempCelsius:        40,
-		stopTempCelsius:         35,
-		maxTempCelsius:          55,
-	}
+func main() {
+	config := loadConfigFromFlags()
+	fmt.Println(config.String())
+
 	pollingRateDuration := config.GetPollingRateDuration()
 
 	err := rpio.Open()
@@ -71,6 +82,25 @@ func main() {
 		}
 
 		time.Sleep(pollingRateDuration)
+	}
+}
+
+func loadConfigFromFlags() Config {
+	gpioPin := flag.Uint("gpio", 18, "GPIO pin number for PWM control")
+	controlFrequencyHz := flag.Uint("freq", 25000, "PWM control frequency in Hz")
+	pollingRateMilliseconds := flag.Uint("poll", 500, "Polling rate in milliseconds")
+	startTempCelsius := flag.Float64("start", 40, "Temperature (°C) to start fan")
+	stopTempCelsius := flag.Float64("stop", 35, "Temperature (°C) to stop fan")
+	maxTempCelsius := flag.Float64("max", 55, "Temperature (°C) for max fan speed")
+	flag.Parse()
+
+	return Config{
+		gpioPin:                 uint8(*gpioPin),
+		controlFrequencyHz:      uint32(*controlFrequencyHz),
+		pollingRateMilliseconds: uint32(*pollingRateMilliseconds),
+		startTempCelsius:        float32(*startTempCelsius),
+		stopTempCelsius:         float32(*stopTempCelsius),
+		maxTempCelsius:          float32(*maxTempCelsius),
 	}
 }
 
