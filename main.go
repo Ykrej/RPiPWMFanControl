@@ -39,9 +39,9 @@ func main() {
 		gpioPin: 18,
 		controlFrequencyHz: 25000,
 		pollingRateMilliseconds: 500,
-		startTempCelsius: 45,
-		stopTempCelsius: 40,
-		maxTempCelsius: 65,
+		startTempCelsius: 40,
+		stopTempCelsius: 35,
+		maxTempCelsius: 55,
 	}
 	pollingRateDuration := config.GetPollingRateDuration()
 
