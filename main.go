@@ -12,36 +12,32 @@ import (
 	rpio "github.com/stianeikeland/go-rpio/v4"
 )
 
-
 const POLLING_SPEED_SECONDS = 1
 const CPU_TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
 
-
-
 type Config struct {
-	gpioPin uint8
-	controlFrequencyHz uint32
+	gpioPin                 uint8
+	controlFrequencyHz      uint32
 	pollingRateMilliseconds uint32
-	startTempCelsius float32
-	stopTempCelsius float32
-	maxTempCelsius float32
+	startTempCelsius        float32
+	stopTempCelsius         float32
+	maxTempCelsius          float32
 }
 
 func (c *Config) GetPollingRateDuration() time.Duration {
 	return time.Duration(c.pollingRateMilliseconds * uint32(time.Millisecond))
 }
 
-
 func main() {
 	fmt.Println("Hello World")
 
 	config := Config{
-		gpioPin: 18,
-		controlFrequencyHz: 25000,
+		gpioPin:                 18,
+		controlFrequencyHz:      25000,
 		pollingRateMilliseconds: 500,
-		startTempCelsius: 40,
-		stopTempCelsius: 35,
-		maxTempCelsius: 55,
+		startTempCelsius:        40,
+		stopTempCelsius:         35,
+		maxTempCelsius:          55,
 	}
 	pollingRateDuration := config.GetPollingRateDuration()
 
@@ -67,13 +63,13 @@ func main() {
 			cpuTemp,
 			float32(fanSpeedPercent),
 		)
-		
+
 		fmt.Printf("CPU Temp: %v°C\tDesired Fan Speed: %v\tCurrent Fan Speed: %v\n", cpuTemp, desiredFanSpeedPercent, fanSpeedPercent)
-		if desiredFanSpeedPercent != math.MaxUint8 {  // uint8 max represent maintain current fan speed
+		if desiredFanSpeedPercent != math.MaxUint8 { // uint8 max represent maintain current fan speed
 			setFanSpeed(pin, desiredFanSpeedPercent)
 			fanSpeedPercent = desiredFanSpeedPercent
 		}
-		
+
 		time.Sleep(pollingRateDuration)
 	}
 }
@@ -88,7 +84,7 @@ func initPwmPin(pinNum uint8, frequency uint32) rpio.Pin {
 }
 
 func setFanSpeed(pin rpio.Pin, percent uint8) {
-	if (percent > 100) {
+	if percent > 100 {
 		percent = 100
 	}
 
@@ -100,7 +96,6 @@ func setFanSpeed(pin rpio.Pin, percent uint8) {
 		true,
 	)
 }
-
 
 func getCpuTempCelsius() (float32, error) {
 	data, err := os.ReadFile(CPU_TEMP_FILE)
@@ -117,10 +112,10 @@ func getCpuTempCelsius() (float32, error) {
 }
 
 func getDesiredFanSpeedPercent(
-	startTempCelsius float32, 
-	stopTempCelsius float32, 
-	maxTempCelsius float32, 
-	currentTempCelsius float32, 
+	startTempCelsius float32,
+	stopTempCelsius float32,
+	maxTempCelsius float32,
+	currentTempCelsius float32,
 	currentFanSpeedPercent float32,
 ) uint8 {
 	// TODO: Replace 100 values with percent fan speed interpolated between stop and max temp
@@ -128,16 +123,16 @@ func getDesiredFanSpeedPercent(
 		return percentOfRange(stopTempCelsius, maxTempCelsius, currentTempCelsius)
 	}
 
-	if currentFanSpeedPercent > 0 {  // Fan already running
+	if currentFanSpeedPercent > 0 { // Fan already running
 		if currentTempCelsius > stopTempCelsius {
 			return percentOfRange(stopTempCelsius, maxTempCelsius, currentTempCelsius)
 		}
-	} else {  // Fan not currently running
+	} else { // Fan not currently running
 		if currentTempCelsius >= startTempCelsius {
 			return percentOfRange(stopTempCelsius, maxTempCelsius, currentTempCelsius)
 		}
 	}
-	
+
 	return 0
 }
 
