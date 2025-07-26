@@ -6,6 +6,11 @@ on:
       - main
     tags:
       - v*
+
+env:
+  BIN_NAME: rpi-pwm-fancontrol
+  BUILD_DIR: build
+
 jobs:
   build:
     name: Format and Build
@@ -24,14 +29,18 @@ jobs:
             exit 1
           fi
       - name: Build
-        run: ./scripts/build_arm64.sh
+        env:
+          GOOS: linux
+          GOARCH: arm64
+          APP_VERSION: ${{ github.ref }}
+        run: go build -ldflags="-X main.Version=$APP_VERSION" $BUILD_DIR/$BIN_NAME
       - name: Upload binary
         if: startsWith(github.ref, 'refs/tags/')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/rpi-pwm-fancontrol
-          asset_name: rpi-pwm-fancontrol
+          file: $BUILD_DIR/$BIN_NAME
+          asset_name: $BIN_NAME
           tag: ${{ github.ref }}
           overwrite: true
           body: "arm64 build"
