@@ -109,7 +109,7 @@ func main() {
 			log.Fatalf("Failed to get cpu temp: %v", err)
 		}
 
-		desiredFanSpeedPercent := minUint8(
+		desiredFanSpeedPercent := maxUint8(
 			getDesiredFanSpeedPercent(
 				config.startTempCelsius,
 				config.stopTempCelsius,
@@ -235,15 +235,15 @@ func percentOfRange(min float32, max float32, value float32) uint8 {
 	return percent
 }
 
-func minUint8(values ...uint8) uint8 {
-	min := values[0]
+func maxUint8(values ...uint8) uint8 {
+	max := values[0]
 	for i := 1; i < len(values); i++ {
-		if min == 0 {
-			return min
+		if max == math.MaxUint8 {
+			return max
 		}
-		if values[i] < min {
-			min = values[i]
+		if values[i] > max {
+			max = values[i]
 		}
 	}
-	return min
+	return max
 }
