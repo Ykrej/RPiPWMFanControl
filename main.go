@@ -13,6 +13,8 @@ import (
 	rpio "github.com/stianeikeland/go-rpio/v4"
 )
 
+var Version string
+
 const POLLING_SPEED_SECONDS = 1
 const CPU_TEMP_FILE = "/sys/class/thermal/thermal_zone0/temp"
 
@@ -92,7 +94,17 @@ func loadConfigFromFlags() Config {
 	startTempCelsius := flag.Float64("start", 40, "Temperature (°C) to start fan")
 	stopTempCelsius := flag.Float64("stop", 35, "Temperature (°C) to stop fan")
 	maxTempCelsius := flag.Float64("max", 55, "Temperature (°C) for max fan speed")
+	version := flag.Bool("version", false, "List version info and exit")
 	flag.Parse()
+
+	if *version {
+		if len(Version) == 0 {
+			fmt.Println("Uh oh, no version info found.")
+		} else {
+			fmt.Println(Version)
+		}
+		os.Exit(0)
+	}
 
 	return Config{
 		gpioPin:                 uint8(*gpioPin),
