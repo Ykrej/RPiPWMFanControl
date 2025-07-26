@@ -1,0 +1,46 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+env:
+  BIN_NAME: rpi-pwm-fancontrol
+  BUILD_DIR: build
+
+jobs:
+  build:
+    name: Format and Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go 1.24
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+      - name: Check Go Format
+        run: |
+          gofmtFiles=$(gofmt -l .)
+          if [ "${#gofmtFiles}" -ne "0" ]; then
+            echo "gofmt failed"
+            exit 1
+          fi
+      - name: Build
+        env:
+          GOOS: linux
+          GOARCH: arm64
+          APP_VERSION: ${{ github.ref }}
+        run: ./scripts/build.sh --version $APP_VERSION
+      - name: Upload binary
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: $BUILD_DIR/$BIN_NAME
+          asset_name: $BIN_NAME
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "arm64 build"
