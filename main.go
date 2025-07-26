@@ -100,9 +100,9 @@ func loadConfigFromFlags() Config {
 	controlFrequencyHz := flag.Uint("freq", 25000, "PWM control frequency in Hz")
 	pollingRateMilliseconds := flag.Uint("poll", 500, "Polling rate in milliseconds")
 	minFanSpeedPercent := flag.Uint("min-speed", 30, "Minimum fan speed as a percent from 0 to 100")
-	startTempCelsius := flag.Float64("start", 40, "Temperature (°C) to start fan")
-	stopTempCelsius := flag.Float64("stop", 35, "Temperature (°C) to stop fan")
-	maxTempCelsius := flag.Float64("max", 55, "Temperature (°C) for max fan speed")
+	startTempCelsius := flag.Float64("start-temp", 40, "Temperature (°C) to start fan")
+	stopTempCelsius := flag.Float64("stop-temp", 35, "Temperature (°C) to stop fan")
+	maxTempCelsius := flag.Float64("max-temp", 55, "Temperature (°C) for max fan speed")
 	version := flag.Bool("version", false, "List version info and exit")
 	flag.Parse()
 
