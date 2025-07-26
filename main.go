@@ -109,16 +109,19 @@ func main() {
 			log.Fatalf("Failed to get cpu temp: %v", err)
 		}
 
-		desiredFanSpeedPercent := maxUint8(
-			getDesiredFanSpeedPercent(
-				config.startTempCelsius,
-				config.stopTempCelsius,
-				config.maxTempCelsius,
-				cpuTemp,
-				float32(fanSpeedPercent),
-			),
-			config.minFanSpeedPercent,
+		desiredFanSpeedPercent := getDesiredFanSpeedPercent(
+			config.startTempCelsius,
+			config.stopTempCelsius,
+			config.maxTempCelsius,
+			cpuTemp,
+			float32(fanSpeedPercent),
 		)
+		if desiredFanSpeedPercent != 0 && desiredFanSpeedPercent != math.MaxUint8 {
+			desiredFanSpeedPercent = maxUint8(
+				desiredFanSpeedPercent,
+				config.minFanSpeedPercent,
+			)
+		}
 
 		if desiredFanSpeedPercent != math.MaxUint8 { // uint8 max represent maintain current fan speed
 			setFanSpeed(pin, desiredFanSpeedPercent)
