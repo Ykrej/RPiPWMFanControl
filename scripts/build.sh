@@ -24,10 +24,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+
+set -ex
+
 if [[ -n "$VERSION" ]]; then
-    LDFLAGS="-ldflags=-X main.Version=$VERSION"
+  LDFLAGS="-ldflags=-X main.Version=$VERSION"
+  go build "$LDFLAGS" -v -o build/rpi-pwm-fancontrol
+  exit 0
+else
+  go build -v -o build/rpi-pwm-fancontrol
 fi
-
-echo "LDFLAGS: $LDFLAGS"
-
-go build "$LDFLAGS" -v -o build/rpi-pwm-fancontrol
