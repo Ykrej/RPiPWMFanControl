@@ -13,6 +13,8 @@ import (
 	rpio "github.com/stianeikeland/go-rpio/v4"
 )
 
+const APPLICATION_NAME = "RPiPWMFanControl"
+
 var Version string
 
 const POLLING_SPEED_SECONDS = 1
@@ -50,6 +52,7 @@ func (c *Config) String() string {
 
 func main() {
 	config := loadConfigFromFlags()
+	fmt.Println(fmt.Sprintf("%v %v", APPLICATION_NAME, Version))
 	fmt.Println(config.String())
 
 	pollingRateDuration := config.GetPollingRateDuration()
