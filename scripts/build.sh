@@ -2,7 +2,7 @@
 
 set -e
 
-GOARCH=arm64
+GOARCH=arm64  # Default arm64 because rpi target
 GOOS=linux
 CGO_ENABLED=0
 
