@@ -35,7 +35,7 @@ jobs:
         env:
           GOOS: linux
           GOARCH: arm64
-          APP_VERSION: ${{ github.ref }}-${{ github.sha }}
+          APP_VERSION: ${{ github.ref_name }}-${{ github.sha }}
         run: ./scripts/build.sh --version $APP_VERSION
       - name: Upload binary
         if: startsWith(github.ref, 'refs/tags/')
