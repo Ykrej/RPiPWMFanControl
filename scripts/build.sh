@@ -2,9 +2,9 @@
 
 set -e
 
-GOARCH=arm64  # Default arm64 because rpi target
-GOOS=linux
-CGO_ENABLED=0
+export GOARCH=arm64  # Default arm64 because rpi target
+export GOOS=linux
+export CGO_ENABLED=0
 
 while [[ $# -gt 0 ]]; do
   case $1 in

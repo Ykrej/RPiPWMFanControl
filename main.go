@@ -52,8 +52,8 @@ func (c *Config) String() string {
 
 func main() {
 	config := loadConfigFromFlags()
-	fmt.Println(fmt.Sprintf("%v %v", APPLICATION_NAME, Version))
-	fmt.Println(config.String())
+	log.Println(fmt.Sprintf("%v %v", APPLICATION_NAME, Version))
+	log.Println(config.String())
 
 	pollingRateDuration := config.GetPollingRateDuration()
 
@@ -80,12 +80,11 @@ func main() {
 			float32(fanSpeedPercent),
 		)
 
-		fmt.Printf("CPU Temp: %v°C\tDesired Fan Speed: %v\tCurrent Fan Speed: %v\n", cpuTemp, desiredFanSpeedPercent, fanSpeedPercent)
 		if desiredFanSpeedPercent != math.MaxUint8 { // uint8 max represent maintain current fan speed
 			setFanSpeed(pin, desiredFanSpeedPercent)
 			fanSpeedPercent = desiredFanSpeedPercent
 		}
-
+		log.Printf("CPU Temp: %v°C\tCurrent Fan Speed: %v\n", cpuTemp, fanSpeedPercent)
 		time.Sleep(pollingRateDuration)
 	}
 }
@@ -132,8 +131,6 @@ func setFanSpeed(pin rpio.Pin, percent uint8) {
 	if percent > 100 {
 		percent = 100
 	}
-
-	fmt.Printf("Setting fan speed to %v\n", percent)
 
 	pin.DutyCycleWithPwmMode(
 		uint32(percent),
