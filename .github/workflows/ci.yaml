@@ -7,6 +7,9 @@ on:
     tags:
       - v*
 
+permissions:
+  contents: write
+
 env:
   BIN_NAME: rpi-pwm-fancontrol
   BUILD_DIR: build
@@ -36,11 +39,8 @@ jobs:
         run: ./scripts/build.sh --version $APP_VERSION
       - name: Upload binary
         if: startsWith(github.ref, 'refs/tags/')
-        uses: svenstaro/upload-release-action@v2
+        uses: alexellis/upload-assets@0.4.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: $BUILD_DIR/$BIN_NAME
-          asset_name: $BIN_NAME
-          tag: ${{ github.ref }}
-          overwrite: true
-          body: "arm64 build"
+          asset_paths: '["${{ env.BUILD_DIR }}/${{ env.BIN_NAME}}"]'
