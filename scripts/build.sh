@@ -8,7 +8,7 @@ CGO_ENABLED=0
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -v|--version)
+    --version)
       VERSION="$2"
       shift # past argument
       shift # past value
