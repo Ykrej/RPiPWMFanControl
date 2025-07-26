@@ -24,6 +24,7 @@ type Config struct {
 	gpioPin                 uint8
 	controlFrequencyHz      uint32
 	pollingRateMilliseconds uint32
+	minFanSpeedPercent      uint8
 	startTempCelsius        float32
 	stopTempCelsius         float32
 	maxTempCelsius          float32
@@ -37,12 +38,14 @@ func (c *Config) String() string {
 	return fmt.Sprintf(`Config
 	GPIO Pin:          %v
 	Control Frequency: %v hz
+	Minimum Fan Speed: %v%%
 	Start Temp:        %v °C
 	Stop Temp:         %v °C
 	Max Temp:          %v °C
 	Polling Rate:      %v ms`,
 		c.gpioPin,
 		c.controlFrequencyHz,
+		c.minFanSpeedPercent,
 		c.startTempCelsius,
 		c.stopTempCelsius,
 		c.maxTempCelsius,
@@ -72,12 +75,15 @@ func main() {
 			log.Fatalf("Failed to get cpu temp: %v", err)
 		}
 
-		desiredFanSpeedPercent := getDesiredFanSpeedPercent(
-			config.startTempCelsius,
-			config.stopTempCelsius,
-			config.maxTempCelsius,
-			cpuTemp,
-			float32(fanSpeedPercent),
+		desiredFanSpeedPercent := minUint8(
+			getDesiredFanSpeedPercent(
+				config.startTempCelsius,
+				config.stopTempCelsius,
+				config.maxTempCelsius,
+				cpuTemp,
+				float32(fanSpeedPercent),
+			),
+			config.minFanSpeedPercent,
 		)
 
 		if desiredFanSpeedPercent != math.MaxUint8 { // uint8 max represent maintain current fan speed
@@ -93,6 +99,7 @@ func loadConfigFromFlags() Config {
 	gpioPin := flag.Uint("gpio", 18, "GPIO pin number for PWM control")
 	controlFrequencyHz := flag.Uint("freq", 25000, "PWM control frequency in Hz")
 	pollingRateMilliseconds := flag.Uint("poll", 500, "Polling rate in milliseconds")
+	minFanSpeedPercent := flag.Uint("min-speed", 30, "Minimum fan speed as a percent from 0 to 100")
 	startTempCelsius := flag.Float64("start", 40, "Temperature (°C) to start fan")
 	stopTempCelsius := flag.Float64("stop", 35, "Temperature (°C) to stop fan")
 	maxTempCelsius := flag.Float64("max", 55, "Temperature (°C) for max fan speed")
@@ -112,6 +119,7 @@ func loadConfigFromFlags() Config {
 		gpioPin:                 uint8(*gpioPin),
 		controlFrequencyHz:      uint32(*controlFrequencyHz),
 		pollingRateMilliseconds: uint32(*pollingRateMilliseconds),
+		minFanSpeedPercent:      uint8(*minFanSpeedPercent),
 		startTempCelsius:        float32(*startTempCelsius),
 		stopTempCelsius:         float32(*stopTempCelsius),
 		maxTempCelsius:          float32(*maxTempCelsius),
@@ -160,7 +168,6 @@ func getDesiredFanSpeedPercent(
 	currentTempCelsius float32,
 	currentFanSpeedPercent float32,
 ) uint8 {
-	// TODO: Replace 100 values with percent fan speed interpolated between stop and max temp
 	if currentTempCelsius >= maxTempCelsius {
 		return percentOfRange(stopTempCelsius, maxTempCelsius, currentTempCelsius)
 	}
@@ -179,7 +186,7 @@ func getDesiredFanSpeedPercent(
 }
 
 func percentOfRange(min float32, max float32, value float32) uint8 {
-	// Gets the percent of the range the value represen
+	// Gets the percent of the range the value represents
 	if value > max {
 		return 100
 	}
@@ -192,4 +199,17 @@ func percentOfRange(min float32, max float32, value float32) uint8 {
 		percent = 100
 	}
 	return percent
+}
+
+func minUint8(values ...uint8) uint8 {
+	min := values[0]
+	for i := 1; i < len(values); i++ {
+		if min == 0 {
+			return min
+		}
+		if values[i] < min {
+			min = values[i]
+		}
+	}
+	return min
 }
