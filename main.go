@@ -84,7 +84,7 @@ func main() {
 			setFanSpeed(pin, desiredFanSpeedPercent)
 			fanSpeedPercent = desiredFanSpeedPercent
 		}
-		log.Printf("CPU Temp: %v°C\tCurrent Fan Speed: %v\n", cpuTemp, fanSpeedPercent)
+		log.Printf("CPU Temp: %v°C\tFan Speed: %v%%\n", cpuTemp, fanSpeedPercent)
 		time.Sleep(pollingRateDuration)
 	}
 }
