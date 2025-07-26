@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -34,6 +35,34 @@ func (c *Config) GetPollingRateDuration() time.Duration {
 	return time.Duration(c.pollingRateMilliseconds * uint32(time.Millisecond))
 }
 
+func (c *Config) Validate() error {
+	if c.startTempCelsius < 0 {
+		return errors.New("startTemp must be positive")
+	}
+
+	if c.stopTempCelsius < 0 {
+		return errors.New("stopTemp must be positive")
+	}
+
+	if c.maxTempCelsius < 0 {
+		return errors.New("maxTemp must be positive")
+	}
+
+	if c.startTempCelsius < c.stopTempCelsius {
+		return errors.New("startTemp must be >= stopTemp")
+	}
+
+	if c.startTempCelsius > c.maxTempCelsius {
+		return errors.New("startTemp must be <= maxTemp")
+	}
+
+	if c.minFanSpeedPercent > 100 {
+		return errors.New("minFanSpeed must be >= 0 and <= 100")
+	}
+
+	return nil
+}
+
 func (c *Config) String() string {
 	return fmt.Sprintf(`Config
 	GPIO Pin:          %v
@@ -58,9 +87,14 @@ func main() {
 	log.Println(fmt.Sprintf("%v %v", APPLICATION_NAME, Version))
 	log.Println(config.String())
 
+	err := config.Validate()
+	if err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
+
 	pollingRateDuration := config.GetPollingRateDuration()
 
-	err := rpio.Open()
+	err = rpio.Open()
 	if err != nil {
 		log.Fatalf("Failed to open memory range in /dev/mem: %v", err)
 	}
